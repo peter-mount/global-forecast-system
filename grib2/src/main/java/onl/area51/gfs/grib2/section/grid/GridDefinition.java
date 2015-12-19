@@ -23,15 +23,35 @@ import onl.area51.gfs.grib2.section.Section;
  *
  * @author peter
  */
-public class GridDefinition
+public abstract class GridDefinition
         extends Section
 {
 
     private final int source;
     private final int noDataPoints;
     private final int noOptionalList;
+    private final InterpretationListNumbers interpretationListNumbers;
 
-    public GridDefinition( GribInputStream gis )
+    public static <T extends GridDefinition> T create( GribInputStream gis )
+            throws IOException
+    {
+        final long pos = gis.position();
+
+        // Get the template from octets 13 & 14
+        gis.seek( pos + 12 );
+        final int templateId = gis.readUnsignedShort();
+        final GridDefinitionTemplate template = GridDefinitionTemplate.lookup( templateId );
+        if( template == GridDefinitionTemplate.RESERVED ) {
+            throw new UnsupportedOperationException( "Reserved template " + templateId + " requested" );
+        }
+
+        gis.seek( pos );
+        final T grid = (T) template.getConstructor().apply( gis );
+        grid.seekNextSection( gis );
+        return grid;
+    }
+
+    protected GridDefinition( GribInputStream gis )
             throws IOException
     {
         super( gis );
@@ -46,13 +66,12 @@ public class GridDefinition
         noOptionalList = gis.readUnsignedByte();
 
         // 12
-        gis.readUnsignedByte();
+        interpretationListNumbers = InterpretationListNumbers.lookup( gis.readUnsignedByte() );
 
         // 13-14
         gis.readUnsignedShort();
 
-        // 15-xx
-        seekNextSection( gis );
+        // 15-xx belongs to the subsclass
     }
 
     public int getNoDataPoints()
@@ -68,6 +87,11 @@ public class GridDefinition
     public int getSource()
     {
         return source;
+    }
+
+    public InterpretationListNumbers getInterpretationListNumbers()
+    {
+        return interpretationListNumbers;
     }
 
 }

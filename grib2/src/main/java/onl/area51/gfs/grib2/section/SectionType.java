@@ -54,7 +54,7 @@ public enum SectionType
                 public Section read( GribInputStream gis )
                 throws IOException
                 {
-                    return new GridDefinition( gis );
+                    return GridDefinition.create( gis );
                 }
 
             },

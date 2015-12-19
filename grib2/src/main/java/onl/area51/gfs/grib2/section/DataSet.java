@@ -16,8 +16,10 @@
 package onl.area51.gfs.grib2.section;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 import onl.area51.gfs.grib2.io.GribInputStream;
 
 /**
@@ -66,6 +68,11 @@ public class DataSet
         return (T) sections.get( type );
     }
 
+    public Collection<SectionType> getSectionTypes()
+    {
+        return sections.keySet();
+    }
+
     @Override
     public final int getLength()
     {
@@ -75,6 +82,16 @@ public class DataSet
     public Header getHeader()
     {
         return header;
+    }
+
+    @Override
+    public String toString()
+    {
+        return sections.keySet()
+                .stream()
+                .sorted( ( a, b ) -> Integer.compare( a.getCode(), b.getCode() ) )
+                .map( Object::toString )
+                .collect( Collectors.joining( ", ", "DataSet[", "]" ) );
     }
 
 }

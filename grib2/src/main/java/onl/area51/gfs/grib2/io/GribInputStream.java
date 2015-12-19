@@ -92,4 +92,44 @@ public interface GribInputStream
         readByteChar( c );
         return String.valueOf( c );
     }
+
+    /**
+     * Debugging utility, write 2 lines to {@link System#out}, the first the index from the current position, the second the byte value in hex
+     * <p>
+     * @param gis
+     *            <p>
+     * @throws IOException
+     */
+    default void printHeader()
+            throws IOException
+    {
+        printHeader( 5 );
+    }
+
+    /**
+     * Debugging utility, write 2 lines to {@link System#out}, the first the index from the current position, the second the byte value in hex
+     * <p>
+     * @param size number of bytes to debug
+     * <p>
+     * @throws IOException
+     */
+    default void printHeader( int size )
+            throws IOException
+    {
+        final long pos = position();
+        try {
+            for( int i = 0; i < size; i++ ) {
+                System.out.printf( "%02x ", i );
+            }
+            System.out.println();
+            for( int i = 0; i < size; i++ ) {
+                System.out.printf( "%02x ", readUnsignedByte() );
+            }
+            System.out.println();
+        }
+        finally {
+            seek( pos );
+        }
+    }
+
 }
