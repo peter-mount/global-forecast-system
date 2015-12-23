@@ -17,6 +17,7 @@ package onl.area51.gfs.grib2;
 
 import java.io.File;
 import java.io.IOException;
+import onl.area51.gfs.grib2.section.BitMap;
 import onl.area51.gfs.grib2.section.DataSet;
 import onl.area51.gfs.grib2.section.Header;
 import onl.area51.gfs.grib2.section.Identification;
@@ -59,11 +60,19 @@ public class Grib2FileTest
 
             DataRepresentation rep = dataSet.get( SectionType.DATA_REPRESENTATION );
             if( rep != null ) {
-                System.out.println( "DataRep " + rep.getTemplateType() + " " + rep.getNoDataPoints() );
+                System.out.printf( "DataRep type=%s noPoints=%d\n", rep.getTemplateType(), rep.getNoDataPoints() );
+            }
+
+            BitMap bitMap = dataSet.get( SectionType.BIT_MAP );
+            if( bitMap != null ) {
+                System.out.printf( "BitMap type %s\n", bitMap.isNoBitMap() );
             }
 
             System.out.println();
-            //fail( "Break" );
+
+            if( i > 10 ) {
+                fail( "Break" );
+            }
         }
 
         fail( "The test case is a prototype." );
