@@ -13,24 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package onl.area51.gfs.grib2.section;
+package onl.area51.gfs.grib2.section.data;
 
 import java.io.IOException;
 import onl.area51.gfs.grib2.io.GribInputStream;
+import onl.area51.gfs.grib2.section.AbstractDataSection;
 
 /**
- *
+ * Provides access to the Data section
+ * <p>
  * @author peter
  */
-public class Data
-        extends Section
+public class DataSection
+        extends AbstractDataSection
 {
 
-    public Data( GribInputStream gis )
+    public DataSection( GribInputStream gis )
             throws IOException
     {
         super( gis );
+        // Set this position as the start of the data block
+        setBaseOffset( gis );
         seekNextSection( gis );
     }
-
 }

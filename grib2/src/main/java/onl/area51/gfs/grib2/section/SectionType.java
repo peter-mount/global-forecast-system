@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import onl.area51.gfs.grib2.io.GribInputStream;
+import onl.area51.gfs.grib2.section.data.DataSection;
 import onl.area51.gfs.grib2.section.grid.GridDefinition;
 
 /**
@@ -96,7 +97,7 @@ public enum SectionType
                 public Section read( Header h, GribInputStream gis )
                 throws IOException
                 {
-                    return new Data( gis );
+                    return new DataSection( gis );
                 }
 
             };

@@ -34,14 +34,24 @@ public interface GribInputStream
     long length()
             throws IOException;
 
-    public int read()
+    int read()
             throws IOException;
 
-    public int read( byte[] b, int off, int len )
+    int read( byte[] b, int off, int len )
             throws IOException;
 
-    public int read( byte[] b )
-            throws IOException;
+    default int read( byte[] b )
+            throws IOException
+    {
+        return read( b, 0, b.length );
+    }
+
+    @Override
+    default void readFully( byte b[] )
+            throws IOException
+    {
+        readFully( b, 0, b.length );
+    }
 
     void seek( long position )
             throws IOException;

@@ -23,7 +23,7 @@ import onl.area51.gfs.grib2.io.GribInputStream;
  * @author peter
  */
 public class BitMap
-        extends Section
+        extends AbstractDataSection
 {
 
     private final int bitMapIndicator;
@@ -34,6 +34,9 @@ public class BitMap
         super( gis );
 
         bitMapIndicator = gis.readUnsignedByte();
+
+        // Mark this position for the start of the data block (if any)
+        setBaseOffset( gis );
         seekNextSection( gis );
     }
 

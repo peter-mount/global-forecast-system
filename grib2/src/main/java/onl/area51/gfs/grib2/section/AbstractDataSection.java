@@ -15,44 +15,42 @@
  */
 package onl.area51.gfs.grib2.section;
 
+import onl.area51.gfs.grib2.io.SubGribInputStream;
+import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import onl.area51.gfs.grib2.io.GribInputStream;
+import static onl.area51.gfs.grib2.section.Section.BASE_SIZE;
 
 /**
- * Common code for all sections (other than the Header)
+ * Adds a GribInputStream implementation that can be used to access the data within this section.
+ * <p>
  * <p>
  * @author peter
  */
-public abstract class Section
-        extends Block
+public abstract class AbstractDataSection
+        extends Section
 {
 
-    /**
-     * The number of octets within a basic section
-     */
-    protected static final int BASE_SIZE = 6;
+    private final GribInputStream gis;
+    private int dataOffset = BASE_SIZE;
 
-    private final int length;
-    private final int id;
-
-    public Section( GribInputStream gis )
+    public AbstractDataSection( GribInputStream gis )
             throws IOException
     {
         super( gis );
-
-        this.length = gis.readInt();
-        id = gis.readUnsignedByte();
+        this.gis = gis;
     }
 
-    public final int getId()
+    protected final void setBaseOffset( GribInputStream gis )
+            throws IOException
     {
-        return id;
+        dataOffset = (int) (gis.position() - getPos());
     }
 
-    @Override
-    public final int getLength()
+    public final GribInputStream subStream()
     {
-        return length;
+        return new SubGribInputStream( gis, getPos() + dataOffset, getLength() - dataOffset );
     }
 
 }
