@@ -15,9 +15,10 @@
  */
 package onl.area51.gfs.grib2.section.data;
 
-import onl.area51.gfs.grib2.section.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import onl.area51.gfs.grib2.io.GribInputStream;
+import uk.trainwatch.io.IOFunction;
 
 /**
  * The Significance of Reference Time
@@ -27,10 +28,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public enum TemplateType
 {
 
-    GRID_POINT_SIMPLE( 0 ),
+    GRID_POINT_SIMPLE( 0, GridPointSimplePacking::new ),
     MATRIX_VALUE_AT_GRID_POINT( 1 ),
-    GRID_POINT_COMPLEX( 2 ),
-    GRID_POINT_COMPLEX_SPATIAL( 3 ),
+    GRID_POINT_COMPLEX( 2, GridPointComplexPacking::new ),
+    GRID_POINT_COMPLEX_SPATIAL( 3, GridPointComplexSpatialDifferencingPacking::new ),
     GRID_POINT_IEEE( 4 ),
     GRID_POINT_JPEG2000( 40 ),
     GRID_POINT_PNG( 41 ),
@@ -44,7 +45,7 @@ public enum TemplateType
      */
     RESERVED( -1 );
     private final int code;
-
+    private final IOFunction<GribInputStream, Packing> constructor;
     private static final Map<Integer, TemplateType> CODES = new ConcurrentHashMap<>();
 
     static {
@@ -63,11 +64,27 @@ public enum TemplateType
     private TemplateType( int code )
     {
         this.code = code;
+
+        TemplateType tt = this;
+        this.constructor = gis -> {
+            throw new UnsupportedOperationException( "Unsupported type " + tt );
+        };
+    }
+
+    private TemplateType( int code, IOFunction<GribInputStream, Packing> constructor )
+    {
+        this.code = code;
+        this.constructor = constructor;
     }
 
     public int getCode()
     {
         return code;
+    }
+
+    public IOFunction<GribInputStream, Packing> getConstructor()
+    {
+        return constructor;
     }
 
 }

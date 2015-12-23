@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package onl.area51.gfs.grib2.section;
+package onl.area51.gfs.grib2.section.data;
 
 import java.io.IOException;
 import onl.area51.gfs.grib2.io.GribInputStream;
@@ -22,31 +22,20 @@ import onl.area51.gfs.grib2.io.GribInputStream;
  *
  * @author peter
  */
-public class DataRepresentation
-        extends Section
+public class GridPointComplexSpatialDifferencingPacking
+        extends GridPointComplexPacking
 {
 
-    private final int noDataPoints;
-    private final int templateNumber;
+    private final int orderSpatialDifference;
+    private final int noOctetsRequired;
 
-    public DataRepresentation( GribInputStream gis )
+    public GridPointComplexSpatialDifferencingPacking( GribInputStream gis )
             throws IOException
     {
         super( gis );
 
-        noDataPoints = gis.readInt();
-        templateNumber = gis.readShort();
-        seekNextSection( gis );
-    }
-
-    public int getNoDataPoints()
-    {
-        return noDataPoints;
-    }
-
-    public int getTemplateNumber()
-    {
-        return templateNumber;
+        orderSpatialDifference = gis.readUnsignedByte();
+        noOctetsRequired = gis.readUnsignedByte();
     }
 
 }

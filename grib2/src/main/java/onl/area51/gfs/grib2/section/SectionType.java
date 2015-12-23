@@ -15,6 +15,7 @@
  */
 package onl.area51.gfs.grib2.section;
 
+import onl.area51.gfs.grib2.section.data.DataRepresentation;
 import onl.area51.gfs.grib2.section.product.ProductDefinition;
 import java.io.IOException;
 import java.util.Map;

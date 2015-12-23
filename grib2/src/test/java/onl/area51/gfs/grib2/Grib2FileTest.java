@@ -22,6 +22,7 @@ import onl.area51.gfs.grib2.section.Header;
 import onl.area51.gfs.grib2.section.Identification;
 import onl.area51.gfs.grib2.section.Section;
 import onl.area51.gfs.grib2.section.SectionType;
+import onl.area51.gfs.grib2.section.data.DataRepresentation;
 import onl.area51.gfs.grib2.section.product.AbstractForecastProduct;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -54,6 +55,11 @@ public class Grib2FileTest
             if( sect instanceof AbstractForecastProduct ) {
                 AbstractForecastProduct prod = (AbstractForecastProduct) sect;
                 System.out.println( prod.getParameterCategory() + " " + prod.getParameterNumber() );
+            }
+
+            DataRepresentation rep = dataSet.get( SectionType.DATA_REPRESENTATION );
+            if( rep != null ) {
+                System.out.println( "DataRep " + rep.getTemplateType() + " " + rep.getNoDataPoints() );
             }
 
             System.out.println();
