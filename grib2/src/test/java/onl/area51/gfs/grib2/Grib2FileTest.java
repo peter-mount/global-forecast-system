@@ -17,11 +17,12 @@ package onl.area51.gfs.grib2;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
 import onl.area51.gfs.grib2.section.DataSet;
 import onl.area51.gfs.grib2.section.Header;
 import onl.area51.gfs.grib2.section.Identification;
+import onl.area51.gfs.grib2.section.Section;
 import onl.area51.gfs.grib2.section.SectionType;
+import onl.area51.gfs.grib2.section.product.AbstractForecastProduct;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -45,7 +46,18 @@ public class Grib2FileTest
             Header h = dataSet.getHeader();
             Identification id = dataSet.get( SectionType.IDENTIFICATION );
 
-            System.out.printf( "%d:%d:d=%s:\n", i + 1, dataSet.getPos(), id.getDateTime() );
+            System.out.printf( "%d:%d:d=%s:%s\n", i + 1, dataSet.getPos(), id.getDateTime(), dataSet );
+            System.out.println( id );
+
+            // Analysis & Average
+            Section sect = dataSet.get( SectionType.PRODUCT_DEFINITION );
+            if( sect instanceof AbstractForecastProduct ) {
+                AbstractForecastProduct prod = (AbstractForecastProduct) sect;
+                System.out.println( prod.getParameterCategory() + " " + prod.getParameterNumber() );
+            }
+
+            System.out.println();
+            //fail( "Break" );
         }
 
         fail( "The test case is a prototype." );

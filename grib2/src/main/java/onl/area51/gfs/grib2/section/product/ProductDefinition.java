@@ -13,23 +13,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package onl.area51.gfs.grib2.section;
+package onl.area51.gfs.grib2.section.product;
 
 import java.io.IOException;
 import onl.area51.gfs.grib2.io.GribInputStream;
+import onl.area51.gfs.grib2.section.Header;
+import onl.area51.gfs.grib2.section.Section;
 
 /**
  *
  * @author peter
  */
-public class ProductDefinition
+public abstract class ProductDefinition
         extends Section
 {
 
     private final int noCoordAfterTemplate;
     private final int templateNo;
 
-    public ProductDefinition( GribInputStream gis )
+    public static <T extends ProductDefinition> T create( Header header, GribInputStream gis )
+            throws IOException
+    {
+        final long pos = gis.position();
+
+        // Get the template from octets 8 & 9
+        gis.seek( pos + 7 );
+        final int templateId = gis.readUnsignedShort();
+        System.out.println( templateId );
+        final ProductDefinitionTemplate template = ProductDefinitionTemplate.lookup( templateId );
+        if( template == ProductDefinitionTemplate.RESERVED ) {
+            gis.seek( pos );
+            gis.printHeader( 16 );
+            throw new UnsupportedOperationException( "Reserved template " + templateId + " requested " + header );
+        }
+
+        gis.seek( pos );
+        final T grid = (T) template.getConstructor().apply( header, gis );
+        grid.seekNextSection( gis );
+        return grid;
+    }
+
+    protected ProductDefinition( GribInputStream gis )
             throws IOException
     {
         super( gis );
@@ -37,7 +61,6 @@ public class ProductDefinition
         templateNo = gis.readUnsignedShort();
         // 10-xx definition Template
         // xx+1-nn optional list of coordinate values
-        seekNextSection( gis );
     }
 
     public int getTemplateNo()

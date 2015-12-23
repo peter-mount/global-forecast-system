@@ -50,7 +50,7 @@ public class DataSet
                 SectionType type = SectionType.lookup( gis.readUnsignedByte() );
                 if( type != null ) {
                     gis.seek( pos );
-                    Section section = type.read( gis );
+                    Section section = type.read( header, gis );
                     if( section != null ) {
                         sections.put( type, section );
                     }

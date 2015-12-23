@@ -15,6 +15,7 @@
  */
 package onl.area51.gfs.grib2.section;
 
+import onl.area51.gfs.grib2.section.product.ProductDefinition;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,7 +32,7 @@ public enum SectionType
     IDENTIFICATION( 1 )
             {
                 @Override
-                public Section read( GribInputStream gis )
+                public Section read( Header h, GribInputStream gis )
                 throws IOException
                 {
                     return new Identification( gis );
@@ -41,7 +42,7 @@ public enum SectionType
     LOCAL_USE( 2 )
             {
                 @Override
-                public Section read( GribInputStream gis )
+                public Section read( Header h, GribInputStream gis )
                 throws IOException
                 {
                     return new LocalUse( gis );
@@ -51,7 +52,7 @@ public enum SectionType
     GRID_DEFINITION( 3 )
             {
                 @Override
-                public Section read( GribInputStream gis )
+                public Section read( Header h, GribInputStream gis )
                 throws IOException
                 {
                     return GridDefinition.create( gis );
@@ -61,17 +62,17 @@ public enum SectionType
     PRODUCT_DEFINITION( 4 )
             {
                 @Override
-                public Section read( GribInputStream gis )
+                public Section read( Header h, GribInputStream gis )
                 throws IOException
                 {
-                    return new ProductDefinition( gis );
+                    return ProductDefinition.create( h, gis );
                 }
 
             },
     DATA_REPRESENTATION( 5 )
             {
                 @Override
-                public Section read( GribInputStream gis )
+                public Section read( Header h, GribInputStream gis )
                 throws IOException
                 {
                     return new DataRepresentation( gis );
@@ -81,7 +82,7 @@ public enum SectionType
     BIT_MAP( 6 )
             {
                 @Override
-                public Section read( GribInputStream gis )
+                public Section read( Header h, GribInputStream gis )
                 throws IOException
                 {
                     return new BitMap( gis );
@@ -91,7 +92,7 @@ public enum SectionType
     DATA( 7 )
             {
                 @Override
-                public Section read( GribInputStream gis )
+                public Section read( Header h, GribInputStream gis )
                 throws IOException
                 {
                     return new Data( gis );
@@ -126,6 +127,6 @@ public enum SectionType
         return code;
     }
 
-    public abstract Section read( GribInputStream gis )
+    public abstract Section read( Header h, GribInputStream gis )
             throws IOException;
 }
