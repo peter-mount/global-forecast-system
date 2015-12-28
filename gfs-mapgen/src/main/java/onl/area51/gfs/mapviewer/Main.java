@@ -125,6 +125,20 @@ public class Main
         }
     }
 
+    /**
+     * Delegates to {@link SwingUtilities#invokeLater(java.lang.Runnable) } after an enforced 50ms delay. This is to allow for other tasks
+     * to be executed first - for example moving the view port to a preset map
+     * <p>
+     * @param r
+     */
+    public static void invokeLater( Runnable r )
+    {
+        executeTask( () -> {
+            Thread.sleep( 50 );
+            SwingUtilities.invokeLater( r );
+        } );
+    }
+
     @FunctionalInterface
     public static interface Task
     {

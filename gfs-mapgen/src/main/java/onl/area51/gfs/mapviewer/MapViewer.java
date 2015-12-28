@@ -30,7 +30,7 @@ public class MapViewer
         extends javax.swing.JFrame
 {
 
-    private TilePanel mapPanel;
+    private final TilePanel mapPanel;
 
     /**
      * Creates new form MapViewer
@@ -42,6 +42,17 @@ public class MapViewer
         mapPanel = new TilePanel();
         mapScrollPane.setViewportView( mapPanel );
         invalidate();
+
+        Main.invokeLater( () -> {
+            ddMapLayer.setSelectedItem( MapTileServer.OPEN_STREET_MAP );
+            Main.invokeLater( () -> {
+                MapPreset preset = MapPreset.WEST_EUROPE_ATLANTIC;
+                TileCache.INSTANCE.setZoom( preset.getZoom() );
+                sliderZoom.setValue( preset.getZoom() );
+                mapPanel.setPreset( preset );
+                Main.invokeLater( this::invalidate );
+            } );
+        } );
     }
 
     /**
@@ -76,6 +87,7 @@ public class MapViewer
         dataSets = new javax.swing.JList();
         mapScrollPane = new javax.swing.JScrollPane();
         status = new javax.swing.JLabel();
+        jComboBox1 = new javax.swing.JComboBox();
         jMenuBar2 = new javax.swing.JMenuBar();
         jMenu3 = new javax.swing.JMenu();
         gribAction = new javax.swing.JMenuItem();
@@ -96,11 +108,11 @@ public class MapViewer
         });
 
         ddMapLayer.setModel(MapTileServer.newComboBoxModel());
-        ddMapLayer.addPropertyChangeListener(new java.beans.PropertyChangeListener()
+        ddMapLayer.addActionListener(new java.awt.event.ActionListener()
         {
-            public void propertyChange(java.beans.PropertyChangeEvent evt)
+            public void actionPerformed(java.awt.event.ActionEvent evt)
             {
-                ddMapLayerPropertyChange(evt);
+                ddMapLayerActionPerformed(evt);
             }
         });
 
@@ -113,6 +125,13 @@ public class MapViewer
             public void stateChanged(javax.swing.event.ChangeEvent evt)
             {
                 sliderZoomStateChanged(evt);
+            }
+        });
+        sliderZoom.addMouseListener(new java.awt.event.MouseAdapter()
+        {
+            public void mouseReleased(java.awt.event.MouseEvent evt)
+            {
+                sliderZoomMouseReleased(evt);
             }
         });
 
@@ -200,7 +219,7 @@ public class MapViewer
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
                     .addComponent(labNoPoints))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(126, Short.MAX_VALUE))
         );
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Available DataSets"));
@@ -221,7 +240,7 @@ public class MapViewer
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
@@ -239,12 +258,12 @@ public class MapViewer
             .addGap(0, 674, Short.MAX_VALUE)
             .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                    .addGap(0, 529, Short.MAX_VALUE)
+                    .addGap(0, 415, Short.MAX_VALUE)
                     .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
             .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel3Layout.createSequentialGroup()
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGap(158, 158, 158)))
+                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(0, 260, Short.MAX_VALUE)))
         );
 
         jSplitPane1.setLeftComponent(jPanel3);
@@ -252,6 +271,15 @@ public class MapViewer
 
         status.setText(" ");
         status.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+
+        jComboBox1.setModel(onl.area51.gfs.mapviewer.MapPreset.getComboBoxModel());
+        jComboBox1.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                jComboBox1ActionPerformed(evt);
+            }
+        });
 
         jMenu3.setText("File");
 
@@ -287,7 +315,9 @@ public class MapViewer
                         .addComponent(sliderZoom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(labZoom, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 820, Short.MAX_VALUE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 314, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 494, Short.MAX_VALUE)))
                 .addContainerGap())
             .addComponent(status, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
@@ -297,10 +327,12 @@ public class MapViewer
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(ddMapLayer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(labZoom, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(labZoom, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(sliderZoom, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 676, Short.MAX_VALUE)
+                .addComponent(jSplitPane1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(status))
         );
@@ -311,17 +343,38 @@ public class MapViewer
     private void sliderZoomStateChanged(javax.swing.event.ChangeEvent evt)//GEN-FIRST:event_sliderZoomStateChanged
     {//GEN-HEADEREND:event_sliderZoomStateChanged
         int zoom = sliderZoom.getValue();
-        TileCache.INSTANCE.setZoom( zoom );
-        labZoom.setText( String.valueOf( zoom ) );
-        mapPanel.repaintMap();
+        if( zoom != TileCache.INSTANCE.getZoom() ) {
+            TileCache.INSTANCE.setZoom( zoom );
+            labZoom.setText( String.valueOf( zoom ) );
+        }
     }//GEN-LAST:event_sliderZoomStateChanged
 
-    private void ddMapLayerPropertyChange(java.beans.PropertyChangeEvent evt)//GEN-FIRST:event_ddMapLayerPropertyChange
-    {//GEN-HEADEREND:event_ddMapLayerPropertyChange
-        // Switch layer, accounting for differences in available zoom levels
-        Object o = evt.getNewValue();
-        if( o instanceof MapTileServer ) {
-            MapTileServer server = (MapTileServer) o;
+    private void formWindowOpened(java.awt.event.WindowEvent evt)//GEN-FIRST:event_formWindowOpened
+    {//GEN-HEADEREND:event_formWindowOpened
+        ddMapLayer.setSelectedItem( TileCache.INSTANCE.getServer() );
+        sliderZoom.setValue( TileCache.INSTANCE.getZoom() );
+        mapPanel.repaintMap();
+    }//GEN-LAST:event_formWindowOpened
+
+    private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jComboBox1ActionPerformed
+    {//GEN-HEADEREND:event_jComboBox1ActionPerformed
+        MapPreset preset = (MapPreset) jComboBox1.getSelectedItem();
+        if( preset != null && preset != MapPreset.UNSET ) {
+            TileCache.INSTANCE.setZoom( preset.getZoom() );
+            sliderZoom.setValue( preset.getZoom() );
+            mapPanel.setPreset( preset );
+        }
+    }//GEN-LAST:event_jComboBox1ActionPerformed
+
+    private void sliderZoomMouseReleased(java.awt.event.MouseEvent evt)//GEN-FIRST:event_sliderZoomMouseReleased
+    {//GEN-HEADEREND:event_sliderZoomMouseReleased
+        mapPanel.repaintMap();
+    }//GEN-LAST:event_sliderZoomMouseReleased
+
+    private void ddMapLayerActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_ddMapLayerActionPerformed
+    {//GEN-HEADEREND:event_ddMapLayerActionPerformed
+        MapTileServer server = (MapTileServer) ddMapLayer.getSelectedItem();
+        if( server != null ) {
             TileCache.INSTANCE.setServer( server );
             int zoom = sliderZoom.getValue();
             int newZoom = Math.min( Math.max( zoom, server.getMinZoom() ), server.getMaxZoom() );
@@ -331,14 +384,7 @@ public class MapViewer
             }
             mapPanel.repaintMap();
         }
-    }//GEN-LAST:event_ddMapLayerPropertyChange
-
-    private void formWindowOpened(java.awt.event.WindowEvent evt)//GEN-FIRST:event_formWindowOpened
-    {//GEN-HEADEREND:event_formWindowOpened
-        ddMapLayer.setSelectedItem( TileCache.INSTANCE.getServer() );
-        sliderZoom.setValue( TileCache.INSTANCE.getZoom() );
-        mapPanel.repaintMap();
-    }//GEN-LAST:event_formWindowOpened
+    }//GEN-LAST:event_ddMapLayerActionPerformed
 
     /**
      * @param args the command line arguments
@@ -392,6 +438,7 @@ public class MapViewer
     private javax.swing.JMenuItem exitItem;
     private javax.swing.JMenuItem gribAction;
     private javax.swing.JMenuItem importAction;
+    private javax.swing.JComboBox jComboBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

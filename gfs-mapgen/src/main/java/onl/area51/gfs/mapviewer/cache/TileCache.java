@@ -79,8 +79,10 @@ public enum TileCache
 
     public void setZoom( int zoom )
     {
-        this.zoom = zoom;
-        tiles.clear();
+        if( this.zoom != zoom ) {
+            this.zoom = zoom;
+            tiles.clear();
+        }
     }
 
     public void clear()
@@ -186,6 +188,7 @@ public enum TileCache
 
     private void loadTile( final Tile tile )
     {
+        System.out.println( "Load tile " + getPath( tile ) );
         try {
             try( InputStream is = Files.newInputStream( getPath( tile ), StandardOpenOption.READ ) ) {
                 tile.setImage( ImageIO.read( is ) );
@@ -199,6 +202,7 @@ public enum TileCache
     private void retrieveTile( final Tile tile )
             throws IOException
     {
+        System.out.println( "Load tile " + getPath( tile ) );
         try {
             tile.setPending( true );
             Path path = getPath( tile );
@@ -214,10 +218,12 @@ public enum TileCache
             }
         }
         catch( IOException ex ) {
+            LOG.log( Level.SEVERE, null, ex );
             tile.setError( true );
             throw ex;
         }
         finally {
+            LOG.log( Level.SEVERE, "Pending false" );
             tile.setPending( false );
         }
     }

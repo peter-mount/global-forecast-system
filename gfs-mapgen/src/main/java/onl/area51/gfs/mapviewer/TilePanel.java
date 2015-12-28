@@ -20,9 +20,12 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import onl.area51.gfs.mapviewer.cache.Tile;
 import onl.area51.gfs.mapviewer.cache.TileCache;
@@ -37,22 +40,34 @@ public class TilePanel
 
     private static final int TILE_SIZE = 256;
 
-    private Rectangle rb = new Rectangle( 0, 0, 1, 1 );
-    private Insets ri = new Insets( 0, 0, 0, 0 );
+    private final Rectangle rb = new Rectangle( 0, 0, 1, 1 );
+    private final Insets ri = new Insets( 0, 0, 0, 0 );
 
     /**
      * Called when something changes like the Zoom or Underlying map
      */
     public void repaintMap()
     {
-        SwingUtilities.invokeLater( () -> {
-            int x = TILE_SIZE * (1 << TileCache.INSTANCE.getZoom());
-            Dimension d = new Dimension( x, x );
-            setMaximumSize( d );
-            setPreferredSize( d );
-            invalidate();
-            //repaint();
-        } );
+        setPreset( null );
+    }
+
+    public void setPreset( MapPreset preset )
+    {
+        int x = TILE_SIZE * (1 << TileCache.INSTANCE.getZoom());
+        Dimension d = new Dimension( x, x );
+        setMaximumSize( d );
+        setPreferredSize( d );
+        invalidate();
+        repaint();
+
+        if( preset != null ) {
+            Main.invokeLater( () -> {
+                JScrollPane p = (JScrollPane) SwingUtilities.getAncestorOfClass( JScrollPane.class, this );
+                JViewport viewport = p.getViewport();
+                viewport.setViewPosition( new Point( preset.getX(), preset.getY() ) );
+            } );
+        }
+        // invalidate();
     }
 
     @Override
@@ -78,7 +93,11 @@ public class TilePanel
         int rx = Math.min( lx + (visible.width / TILE_SIZE) + 2, maxXY );
         int by = Math.min( ty + (visible.height / TILE_SIZE) + 2, maxXY );
 
-        Main.setStatus( "zoom=%s lx=%d ty=%d lx=%d rx=%d by=%d vx=%d vy=%d", zoom, lx, ty, lx, rx, by, visible.x, visible.y );
+        //Main.setStatus( "zoom=%s lx=%d ty=%d lx=%d rx=%d by=%d vx=%d vy=%d", zoom, lx, ty, lx, rx, by, visible.x, visible.y );
+        JScrollPane p = (JScrollPane) SwingUtilities.getAncestorOfClass( JScrollPane.class, this );
+        Point pt = p.getViewport().getViewPosition();
+
+        Main.setStatus( "zoom=%s x=%d y=%d", zoom, pt.x, pt.y );
 
         Font font = Font.decode( Font.MONOSPACED );
 
@@ -86,7 +105,9 @@ public class TilePanel
         //g.clipRect( rb.x, rb.y, rb.width, rb.height );
         //for( int y = ly, yp = TILE_SIZE * ly; yp < rb.y + rb.height && y < maxXY; yp += TILE_SIZE, y++ ) {
         //    for( int x = lx, xp = TILE_SIZE * lx; xp < rb.x + rb.width && x < maxXY; xp += TILE_SIZE, x++ ) {
-        for( int y = ty, yp = TILE_SIZE * ty; y < by; yp += TILE_SIZE, y++ ) {
+        for( int y = ty, yp = TILE_SIZE * ty;
+             y < by;
+             yp += TILE_SIZE, y++ ) {
             for( int x = lx, xp = TILE_SIZE * lx; x < rx; xp += TILE_SIZE, x++ ) {
                 Tile tile = TileCache.INSTANCE.getTile( x, y, t -> repaint(), ( t, e ) -> repaint() );
                 if( tile != null ) {
@@ -104,6 +125,7 @@ public class TilePanel
                 }
             }
         }
+
         g.setClip( ccache );
     }
 
