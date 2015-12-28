@@ -15,15 +15,13 @@
  */
 package onl.area51.gfs.mapviewer;
 
+import java.io.IOException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import onl.area51.gfs.grib2.Grib2File;
-import onl.area51.gfs.mapviewer.action.OpenGribAction;
 import onl.area51.gfs.mapviewer.cache.TileCache;
 
 /**
@@ -34,7 +32,7 @@ public class Main
 {
 
     private static MapViewer frame;
-    private static final Executor executor = Executors.newSingleThreadExecutor();
+    private static final Executor executor = Executors.newCachedThreadPool();
     private static Grib2File gribFile;
 
     public static void main( String args[] )
@@ -87,7 +85,25 @@ public class Main
 
     public static void setGribFile( Grib2File gribFile )
     {
+        if( Main.gribFile != null ) {
+            try {
+                Main.gribFile.close();
+            }
+            catch( IOException ex ) {
+                Logger.getLogger( Main.class.getName() ).log( Level.SEVERE, null, ex );
+            }
+        }
         Main.gribFile = gribFile;
+    }
+
+    public static void setStatus( String s )
+    {
+        frame.setStatus( s );
+    }
+
+    public static void setStatus( String s, Object... args )
+    {
+        setStatus( String.format( s, args ) );
     }
 
     public static void execute( Runnable command )
@@ -97,14 +113,16 @@ public class Main
 
     public static void executeTask( Task c )
     {
-        executor.execute( () -> {
-            try {
-                c.run();
-            }
-            catch( Exception e ) {
-                ErrorDialog.show( e );
-            }
-        } );
+        if( c != null ) {
+            executor.execute( () -> {
+                try {
+                    c.run();
+                }
+                catch( Exception e ) {
+                    ErrorDialog.show( e );
+                }
+            } );
+        }
     }
 
     @FunctionalInterface

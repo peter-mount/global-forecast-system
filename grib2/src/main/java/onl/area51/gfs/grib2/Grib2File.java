@@ -15,6 +15,7 @@
  */
 package onl.area51.gfs.grib2;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ import onl.area51.gfs.grib2.section.DataSet;
  * @author peter
  */
 public class Grib2File
+        implements Closeable
 {
 
     private final File file;
@@ -51,6 +53,13 @@ public class Grib2File
             entries.add( dataSet );
             index.put( entries.size(), dataSet );
         }
+    }
+
+    @Override
+    public void close()
+            throws IOException
+    {
+        gis.close();
     }
 
     public File getFile()

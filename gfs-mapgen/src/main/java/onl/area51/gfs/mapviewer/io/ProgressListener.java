@@ -13,35 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package onl.area51.gfs.mapviewer.action;
-
-import java.util.Enumeration;
-import javax.swing.DefaultListModel;
+package onl.area51.gfs.mapviewer.io;
 
 /**
  *
  * @author peter
  */
-public class DataSetModel<T>
-        extends DefaultListModel<T>
+@FunctionalInterface
+public interface ProgressListener
 {
 
-    public DataSetModel()
-    {
-    }
-
-    public DataSetModel add( T ds )
-    {
-        addElement( ds );
-        return this;
-    }
-
-    public static <T> DataSetModel<T> combine( DataSetModel<T> a, DataSetModel<T> b )
-    {
-        Enumeration<T> en = b.elements();
-        while( en.hasMoreElements() ) {
-            a.addElement( en.nextElement() );
-        }
-        return a;
-    }
+    /**
+     *
+     * @param percent  The percentage position
+     * @param position The number of bytes read
+     * @param length   The expected length
+     */
+    void progressUpdate( int percent, long position, long length );
 }

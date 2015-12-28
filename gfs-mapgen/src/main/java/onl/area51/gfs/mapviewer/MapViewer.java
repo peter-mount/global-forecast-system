@@ -16,6 +16,8 @@
 package onl.area51.gfs.mapviewer;
 
 import javax.swing.JList;
+import javax.swing.SwingUtilities;
+import onl.area51.gfs.mapviewer.action.ImportGribAction;
 import onl.area51.gfs.mapviewer.action.OpenGribAction;
 import onl.area51.gfs.mapviewer.action.QuitAction;
 import onl.area51.gfs.mapviewer.cache.TileCache;
@@ -73,9 +75,11 @@ public class MapViewer
         jScrollPane1 = new javax.swing.JScrollPane();
         dataSets = new javax.swing.JList();
         mapScrollPane = new javax.swing.JScrollPane();
+        status = new javax.swing.JLabel();
         jMenuBar2 = new javax.swing.JMenuBar();
         jMenu3 = new javax.swing.JMenu();
         gribAction = new javax.swing.JMenuItem();
+        importAction = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         exitItem = new javax.swing.JMenuItem();
         jMenu4 = new javax.swing.JMenu();
@@ -217,7 +221,7 @@ public class MapViewer
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 356, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
@@ -232,10 +236,10 @@ public class MapViewer
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 536, Short.MAX_VALUE)
+            .addGap(0, 674, Short.MAX_VALUE)
             .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                    .addGap(0, 391, Short.MAX_VALUE)
+                    .addGap(0, 529, Short.MAX_VALUE)
                     .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
             .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel3Layout.createSequentialGroup()
@@ -246,10 +250,17 @@ public class MapViewer
         jSplitPane1.setLeftComponent(jPanel3);
         jSplitPane1.setRightComponent(mapScrollPane);
 
+        status.setText(" ");
+        status.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+
         jMenu3.setText("File");
 
         gribAction.setAction(OpenGribAction.getInstance());
         jMenu3.add(gribAction);
+
+        importAction.setAction(ImportGribAction.getInstance());
+        importAction.setText("jMenuItem1");
+        jMenu3.add(importAction);
         jMenu3.add(jSeparator1);
 
         exitItem.setAction(new QuitAction());
@@ -269,31 +280,29 @@ public class MapViewer
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jSplitPane1, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(ddMapLayer, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(sliderZoom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(labZoom, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 385, Short.MAX_VALUE))
-                    .addComponent(jSplitPane1, javax.swing.GroupLayout.Alignment.TRAILING))
+                        .addGap(0, 820, Short.MAX_VALUE)))
                 .addContainerGap())
+            .addComponent(status, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(ddMapLayer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(labZoom, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(20, 20, 20)
-                        .addComponent(jSplitPane1))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(sliderZoom, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                    .addComponent(ddMapLayer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(labZoom, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(sliderZoom, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 676, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(status))
         );
 
         pack();
@@ -371,13 +380,18 @@ public class MapViewer
     {
         return dataSets;
     }
-    
+
+    public void setStatus( String s )
+    {
+        SwingUtilities.invokeLater( () -> status.setText( s ) );
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JList dataSets;
     private javax.swing.JComboBox ddMapLayer;
     private javax.swing.JMenuItem exitItem;
     private javax.swing.JMenuItem gribAction;
+    private javax.swing.JMenuItem importAction;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -400,5 +414,6 @@ public class MapViewer
     private javax.swing.JLabel labZoom;
     private javax.swing.JScrollPane mapScrollPane;
     private javax.swing.JSlider sliderZoom;
+    private javax.swing.JLabel status;
     // End of variables declaration//GEN-END:variables
 }

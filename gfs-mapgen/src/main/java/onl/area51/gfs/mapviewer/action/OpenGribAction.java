@@ -19,12 +19,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import javax.swing.AbstractAction;
-import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import onl.area51.gfs.grib2.Grib2File;
 import onl.area51.gfs.grib2.io.Grib2FileFilter;
-import onl.area51.gfs.grib2.section.DataSet;
 import onl.area51.gfs.grib2.section.SectionType;
 import onl.area51.gfs.grib2.section.product.AbstractForecastProduct;
 import onl.area51.gfs.mapviewer.Main;
@@ -65,27 +64,36 @@ public class OpenGribAction
     @Override
     public void actionPerformed( ActionEvent e )
     {
-        if( fileChooser.showOpenDialog( Main.getFrame() ) == JFileChooser.OPEN_DIALOG ) {
-            File file = fileChooser.getSelectedFile();
+        SwingUtilities.invokeLater( () -> {
+            if( fileChooser.showOpenDialog( Main.getFrame() ) == JFileChooser.APPROVE_OPTION ) {
+                File file = fileChooser.getSelectedFile();
+                Main.executeTask( () -> open( file ) );
+            }
+            else if( e == null ) {
+                // No Action then from Main so close
+                System.exit( 0 );
+            }
+        } );
+    }
 
-            Main.executeTask( () -> {
-                MapViewer viewer = Main.getFrame();
+    public void open( File file )
+            throws Exception
+    {
+        Main.setStatus( "Opening %s", file.getName() );
 
-                Grib2File grib = new Grib2File( file );
-                Main.setGribFile( grib );
+        MapViewer viewer = Main.getFrame();
 
-                // Replace the list model
-                viewer.getDataSets().setModel(
-                        grib.stream()
-                        .filter( ds -> AbstractForecastProduct.isSupported( ds.get( SectionType.PRODUCT_DEFINITION ) ) )
-                        .reduce( new DataSetModel(), DataSetModel::add, DataSetModel::combine )
-                );
-            } );
-        }
-        else if( e == null ) {
-            // No Action then from Main so close
-            System.exit( 0 );
-        }
+        Grib2File grib = new Grib2File( file );
+        Main.setGribFile( grib );
+
+        // Replace the list model
+        viewer.getDataSets().setModel(
+                grib.stream()
+                .filter( ds -> AbstractForecastProduct.isSupported( ds.get( SectionType.PRODUCT_DEFINITION ) ) )
+                .reduce( new DataSetModel(), DataSetModel::add, DataSetModel::combine )
+        );
+
+        Main.setStatus( "Opened %s", file.getName() );
     }
 
 }

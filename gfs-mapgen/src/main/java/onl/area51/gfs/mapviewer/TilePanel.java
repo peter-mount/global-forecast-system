@@ -78,6 +78,8 @@ public class TilePanel
         int rx = Math.min( lx + (visible.width / TILE_SIZE) + 2, maxXY );
         int by = Math.min( ty + (visible.height / TILE_SIZE) + 2, maxXY );
 
+        Main.setStatus( "zoom=%s lx=%d ty=%d lx=%d rx=%d by=%d vx=%d vy=%d", zoom, lx, ty, lx, rx, by, visible.x, visible.y );
+
         Font font = Font.decode( Font.MONOSPACED );
 
         Shape ccache = g.getClip();
