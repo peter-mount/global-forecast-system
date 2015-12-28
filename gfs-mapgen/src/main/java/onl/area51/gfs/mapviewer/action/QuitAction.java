@@ -39,6 +39,7 @@ public class QuitAction
     @Override
     public void actionPerformed( ActionEvent e )
     { 
+        System.out.println("****EXIT****");
         System.exit( 0 );
     }
 

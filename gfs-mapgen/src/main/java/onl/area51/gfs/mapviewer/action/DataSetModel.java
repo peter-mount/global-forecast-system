@@ -15,6 +15,7 @@
  */
 package onl.area51.gfs.mapviewer.action;
 
+import java.util.Enumeration;
 import javax.swing.DefaultListModel;
 import javax.swing.SwingUtilities;
 import onl.area51.gfs.grib2.Grib2File;
@@ -30,6 +31,21 @@ public class DataSetModel
 
     public DataSetModel()
     {
+    }
+
+    public DataSetModel add( DataSet ds )
+    {
+        addElement( ds );
+        return this;
+    }
+
+    public static DataSetModel combine( DataSetModel a, DataSetModel b )
+    {
+        Enumeration<DataSet> en = b.elements();
+        while( en.hasMoreElements() ) {
+            a.addElement( en.nextElement() );
+        }
+        return a;
     }
 
     public void reset( Grib2File grib )

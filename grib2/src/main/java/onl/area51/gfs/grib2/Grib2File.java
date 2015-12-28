@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 import onl.area51.gfs.grib2.io.GribFileInputStream;
 import onl.area51.gfs.grib2.io.GribInputStream;
 import onl.area51.gfs.grib2.section.DataSet;
@@ -44,7 +45,7 @@ public class Grib2File
     {
         this.file = file;
         gis = new GribFileInputStream( file );
-        
+
         while( gis.position() < gis.length() ) {
             DataSet dataSet = new DataSet( gis );
             entries.add( dataSet );
@@ -77,4 +78,8 @@ public class Grib2File
         entries.forEach( action );
     }
 
+    public Stream<DataSet> stream()
+    {
+        return entries.stream();
+    }
 }

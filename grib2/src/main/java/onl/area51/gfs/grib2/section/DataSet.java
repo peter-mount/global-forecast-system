@@ -92,19 +92,9 @@ public class DataSet
         Identification id = get( SectionType.IDENTIFICATION );
         ProductDefinition prodDef = get( SectionType.PRODUCT_DEFINITION );
         if( prodDef instanceof AbstractForecastProduct ) {
-            AbstractForecastProduct abstractForecastProduct = (AbstractForecastProduct) prodDef;
-            Product prod = abstractForecastProduct.getParameterNumber();
-            if( prod == null ) {
-                return "(null) "
-                       + prodDef.getTemplate()
+                return prodDef.toString()
                        + " "
                        + id.getDateTime();
-            }
-            else {
-                return prod.getAbbrev()
-                       + " "
-                       + id.getDateTime();
-            }
         }
         else if( prodDef != null ) {
             return prodDef.getTemplate().toString()

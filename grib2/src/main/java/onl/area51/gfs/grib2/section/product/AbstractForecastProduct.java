@@ -16,6 +16,8 @@
 package onl.area51.gfs.grib2.section.product;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import onl.area51.gfs.grib2.io.GribInputStream;
 import onl.area51.gfs.grib2.section.Header;
 
@@ -40,16 +42,18 @@ public abstract class AbstractForecastProduct<T extends Product>
     private final int hoursObservationDataCutoff;
     private final int minutesObservationDataCutoff;
 
-    private final int unitTimeRange;
+    private final UnitOfTimeRange unitTimeRange;
     private final int forecastTime;
 
-    private final int typeFirstFixedSurface;
+    private final FixedSurfaceType typeFirstFixedSurface;
     private final int scaleFactorFirstFixedSurface;
     private final int scaleValueFirstFixedSurface;
+    private final BigDecimal firstFixedSurface;
 
-    private final int typeSecondFixedSurface;
+    private final FixedSurfaceType typeSecondFixedSurface;
     private final int scaleFactorSecondFixedSurface;
     private final int scaleValueSecondFixedSurface;
+    private final BigDecimal secondFixedSurface;
 
     public AbstractForecastProduct( Header header, GribInputStream gis )
             throws IOException
@@ -66,17 +70,66 @@ public abstract class AbstractForecastProduct<T extends Product>
         hoursObservationDataCutoff = gis.readUnsignedShort();
         minutesObservationDataCutoff = gis.readUnsignedByte();
 
-        unitTimeRange = gis.readUnsignedByte();
+        unitTimeRange = UnitOfTimeRange.lookup( gis.readUnsignedByte() );
         forecastTime = gis.readInt();
 
-        typeFirstFixedSurface = gis.readUnsignedByte();
+        typeFirstFixedSurface = FixedSurfaceType.lookup( gis.readUnsignedByte() );
         scaleFactorFirstFixedSurface = gis.readUnsignedByte();
         scaleValueFirstFixedSurface = gis.readInt();
+        firstFixedSurface = BigDecimal.valueOf( scaleValueFirstFixedSurface, scaleFactorFirstFixedSurface );
 
-        typeSecondFixedSurface = gis.readUnsignedByte();
+        typeSecondFixedSurface = FixedSurfaceType.lookup( gis.readUnsignedByte() );
         scaleFactorSecondFixedSurface = gis.readUnsignedByte();
         scaleValueSecondFixedSurface = gis.readInt();
+        secondFixedSurface = BigDecimal.valueOf( scaleValueSecondFixedSurface, scaleFactorSecondFixedSurface );
+    }
 
+    @Override
+    public String toString()
+    {
+        return String.format( getFirstFixedSurfaceType().getUnit().isEmpty() ? "%1$s (%2$s) %5$s %6$s" : "%1$s (%2$s) %3$.0f %4$s %5$s %6$s",
+                              getProduct() == null ? "null" : getProduct().getAbbrev(),
+                              getProduct() == null ? "" : getProduct().getLabel(),
+                              fixValue( getFirstFixedSurface(), getFirstFixedSurfaceType().getUnit() ),
+                              fixUnit( getFirstFixedSurface(), getFirstFixedSurfaceType().getUnit() ),
+                              getForecastTime(), getUnitTimeRange().getLabel()
+        );
+    }
+
+    public static boolean isSupported( ProductDefinition def )
+    {
+        if( def instanceof AbstractForecastProduct ) {
+            AbstractForecastProduct prod = (AbstractForecastProduct) def;
+            return prod.getProduct() != null;
+        }
+        return false;
+    }
+
+    /**
+     * Fix unit to handle kX
+     * <p>
+     * @param d
+     * @param unit
+     *             <p>
+     * @return
+     */
+    private String fixUnit( BigDecimal d, String unit )
+    {
+        return unit.isEmpty() || d.intValue() < 1000 ? unit : "k" + unit;
+    }
+    private static final BigDecimal THOUSAND = BigDecimal.valueOf( 1000 );
+
+    /**
+     * Fix unit to handle kX
+     * <p>
+     * @param d
+     * @param unit
+     *             <p>
+     * @return
+     */
+    private BigDecimal fixValue( BigDecimal d, String unit )
+    {
+        return unit.isEmpty() || d.intValue() < 1000 ? d : d.divide( THOUSAND );
     }
 
     public ParameterCategory getParameterCategory()
@@ -84,7 +137,7 @@ public abstract class AbstractForecastProduct<T extends Product>
         return parameterCategory;
     }
 
-    public T getParameterNumber()
+    public T getProduct()
     {
         return parameterNumber;
     }
@@ -114,7 +167,7 @@ public abstract class AbstractForecastProduct<T extends Product>
         return minutesObservationDataCutoff;
     }
 
-    public int getUnitTimeRange()
+    public UnitOfTimeRange getUnitTimeRange()
     {
         return unitTimeRange;
     }
@@ -124,7 +177,7 @@ public abstract class AbstractForecastProduct<T extends Product>
         return forecastTime;
     }
 
-    public int getTypeFirstFixedSurface()
+    public FixedSurfaceType getFirstFixedSurfaceType()
     {
         return typeFirstFixedSurface;
     }
@@ -139,7 +192,12 @@ public abstract class AbstractForecastProduct<T extends Product>
         return scaleValueFirstFixedSurface;
     }
 
-    public int getTypeSecondFixedSurface()
+    public BigDecimal getFirstFixedSurface()
+    {
+        return firstFixedSurface;
+    }
+
+    public FixedSurfaceType getSecondFixedSurfaceType()
     {
         return typeSecondFixedSurface;
     }
@@ -152,6 +210,11 @@ public abstract class AbstractForecastProduct<T extends Product>
     public int getScaleValueSecondFixedSurface()
     {
         return scaleValueSecondFixedSurface;
+    }
+
+    public BigDecimal getSecondFixedSurface()
+    {
+        return secondFixedSurface;
     }
 
 }

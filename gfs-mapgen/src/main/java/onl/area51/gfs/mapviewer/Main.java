@@ -23,6 +23,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import onl.area51.gfs.grib2.Grib2File;
+import onl.area51.gfs.mapviewer.action.OpenGribAction;
 import onl.area51.gfs.mapviewer.cache.TileCache;
 
 /**
@@ -63,9 +64,14 @@ public class Main
         TileCache.INSTANCE.setZoom( 0 );
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater( () -> {
+        SwingUtilities.invokeLater( () -> {
             frame = new MapViewer();
             frame.setVisible( true );
+
+            // This shows the open dialog when we open
+//            SwingUtilities.invokeLater( () -> {
+//                OpenGribAction.getInstance().actionPerformed( null );
+//            } );
         } );
     }
 

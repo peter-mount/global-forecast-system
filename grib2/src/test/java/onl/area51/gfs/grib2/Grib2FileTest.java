@@ -55,7 +55,7 @@ public class Grib2FileTest
             Section sect = dataSet.get( SectionType.PRODUCT_DEFINITION );
             if( sect instanceof AbstractForecastProduct ) {
                 AbstractForecastProduct prod = (AbstractForecastProduct) sect;
-                System.out.println( prod.getParameterCategory() + " " + prod.getParameterNumber() );
+                System.out.println( prod.getParameterCategory() + " " + prod.getProduct() );
             }
 
             DataRepresentation rep = dataSet.get( SectionType.DATA_REPRESENTATION );

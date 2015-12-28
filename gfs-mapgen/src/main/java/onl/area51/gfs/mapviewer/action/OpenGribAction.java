@@ -25,6 +25,8 @@ import javax.swing.KeyStroke;
 import onl.area51.gfs.grib2.Grib2File;
 import onl.area51.gfs.grib2.io.Grib2FileFilter;
 import onl.area51.gfs.grib2.section.DataSet;
+import onl.area51.gfs.grib2.section.SectionType;
+import onl.area51.gfs.grib2.section.product.AbstractForecastProduct;
 import onl.area51.gfs.mapviewer.Main;
 import onl.area51.gfs.mapviewer.MapViewer;
 
@@ -36,9 +38,16 @@ public class OpenGribAction
         extends AbstractAction
 {
 
+    private static final OpenGribAction INSTANCE = new OpenGribAction();
+
+    public static OpenGribAction getInstance()
+    {
+        return INSTANCE;
+    }
+
     private final JFileChooser fileChooser;
 
-    public OpenGribAction()
+    private OpenGribAction()
     {
         super( "Open Grib File" );
         setEnabled( enabled );
@@ -65,10 +74,17 @@ public class OpenGribAction
                 Grib2File grib = new Grib2File( file );
                 Main.setGribFile( grib );
 
-                DefaultListModel<DataSet> dataSetModel = new DefaultListModel<>();
-                grib.forEach( dataSetModel::addElement );
-                viewer.getDataSets().setModel( dataSetModel );
+                // Replace the list model
+                viewer.getDataSets().setModel(
+                        grib.stream()
+                        .filter( ds -> AbstractForecastProduct.isSupported( ds.get( SectionType.PRODUCT_DEFINITION ) ) )
+                        .reduce( new DataSetModel(), DataSetModel::add, DataSetModel::combine )
+                );
             } );
+        }
+        else if( e == null ) {
+            // No Action then from Main so close
+            System.exit( 0 );
         }
     }
 
