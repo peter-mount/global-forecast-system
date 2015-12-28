@@ -19,8 +19,10 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 import onl.area51.gfs.grib2.io.GribInputStream;
+import onl.area51.gfs.grib2.section.product.AbstractForecastProduct;
+import onl.area51.gfs.grib2.section.product.Product;
+import onl.area51.gfs.grib2.section.product.ProductDefinition;
 
 /**
  * A dataset within a grib file
@@ -87,11 +89,32 @@ public class DataSet
     @Override
     public String toString()
     {
-        return sections.keySet()
-                .stream()
-                .sorted( ( a, b ) -> Integer.compare( a.getCode(), b.getCode() ) )
-                .map( Object::toString )
-                .collect( Collectors.joining( ", ", "DataSet[", "]" ) );
+        Identification id = get( SectionType.IDENTIFICATION );
+        ProductDefinition prodDef = get( SectionType.PRODUCT_DEFINITION );
+        if( prodDef instanceof AbstractForecastProduct ) {
+            AbstractForecastProduct abstractForecastProduct = (AbstractForecastProduct) prodDef;
+            Product prod = abstractForecastProduct.getParameterNumber();
+            if( prod == null ) {
+                return "(null) "
+                       + prodDef.getTemplate()
+                       + " "
+                       + id.getDateTime();
+            }
+            else {
+                return prod.getAbbrev()
+                       + " "
+                       + id.getDateTime();
+            }
+        }
+        else if( prodDef != null ) {
+            return prodDef.getTemplate().toString()
+                   + " "
+                   + id.getDateTime();
+        }
+        else {
+            return header.toString()
+                   + " "
+                   + id.getDateTime();
+        }
     }
-
 }

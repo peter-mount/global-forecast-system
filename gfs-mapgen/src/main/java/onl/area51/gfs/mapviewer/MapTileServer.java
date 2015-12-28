@@ -15,6 +15,9 @@
  */
 package onl.area51.gfs.mapviewer;
 
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
+
 /**
  *
  * @author peter
@@ -32,6 +35,11 @@ public enum MapTileServer
     private final int minZoom;
     private final int maxZoom;
 
+    public static ComboBoxModel newComboBoxModel()
+    {
+        return new DefaultComboBoxModel( MapTileServer.values() );
+    }
+
     private MapTileServer( String title, String uri, MapTileLayout layout, int minZoom, int maxZoom )
     {
         this.title = title;
@@ -41,7 +49,8 @@ public enum MapTileServer
         this.maxZoom = maxZoom;
     }
 
-    public String getTitle()
+    @Override
+    public String toString()
     {
         return title;
     }

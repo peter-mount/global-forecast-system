@@ -29,7 +29,7 @@ public abstract class ProductDefinition
 {
 
     private final int noCoordAfterTemplate;
-    private final int templateNo;
+    private final ProductDefinitionTemplate template;
 
     public static <T extends ProductDefinition> T create( Header header, GribInputStream gis )
             throws IOException
@@ -39,7 +39,6 @@ public abstract class ProductDefinition
         // Get the template from octets 8 & 9
         gis.seek( pos + 7 );
         final int templateId = gis.readUnsignedShort();
-        System.out.println( templateId );
         final ProductDefinitionTemplate template = ProductDefinitionTemplate.lookup( templateId );
         if( template == ProductDefinitionTemplate.RESERVED ) {
             gis.seek( pos );
@@ -58,14 +57,14 @@ public abstract class ProductDefinition
     {
         super( gis );
         noCoordAfterTemplate = gis.readUnsignedShort();
-        templateNo = gis.readUnsignedShort();
+        template = ProductDefinitionTemplate.lookup( gis.readUnsignedShort() );
         // 10-xx definition Template
         // xx+1-nn optional list of coordinate values
     }
 
-    public int getTemplateNo()
+    public ProductDefinitionTemplate getTemplate()
     {
-        return templateNo;
+        return template;
     }
 
     public int getNoCoordAfterTemplate()

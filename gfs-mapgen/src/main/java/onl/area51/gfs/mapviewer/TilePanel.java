@@ -45,17 +45,14 @@ public class TilePanel
      */
     public void repaintMap()
     {
-        if( SwingUtilities.isEventDispatchThread() ) {
+        SwingUtilities.invokeLater( () -> {
             int x = TILE_SIZE * (1 << TileCache.INSTANCE.getZoom());
             Dimension d = new Dimension( x, x );
             setMaximumSize( d );
             setPreferredSize( d );
             invalidate();
             //repaint();
-        }
-        else {
-            SwingUtilities.invokeLater( this::repaintMap );
-        }
+        } );
     }
 
     @Override
@@ -100,7 +97,7 @@ public class TilePanel
                         g.drawLine( xp, yp, xp + TILE_SIZE, yp + TILE_SIZE );
                         g.drawLine( xp + TILE_SIZE, yp + TILE_SIZE, xp, yp );
                         g.setFont( font );
-                        g.drawString( String.format( "(%d,%d,%d)", x, y ), zoom, xp + (TILE_SIZE >>> 2), yp + (TILE_SIZE >>> 1) );
+                        g.drawString( String.format( "(%d,%d,%d)", zoom, x, y ), xp + (TILE_SIZE >>> 2), yp + (TILE_SIZE >>> 1) );
                     }
                 }
             }

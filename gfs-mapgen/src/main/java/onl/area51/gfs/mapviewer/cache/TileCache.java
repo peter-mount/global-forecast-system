@@ -100,13 +100,14 @@ public enum TileCache
      */
     public Tile getTile( int x, int y, Consumer<Tile> success, BiConsumer<Tile, Exception> fail )
     {
+        final int zoom = this.zoom;
         final long max = 1L << zoom;
         final long lx = (long) x, ly = (long) y;
         if( lx < 0 || lx >= max || ly < 0 || ly >= max ) {
             return null;
         }
 
-        final Tile tile = tiles.computeIfAbsent( lx * max + ly, index -> new Tile( x, y ) );
+        final Tile tile = tiles.computeIfAbsent( lx * max + ly, index -> new Tile( zoom, x, y ) );
 
         // If no image but not pending (retrieving) or in error then background thread to retrieve it
         if( !tile.isImagePresent() && !tile.isError() && !tile.isPending() ) {
@@ -170,7 +171,7 @@ public enum TileCache
     {
         String name = String.join( "_",
                                    server.toString(),
-                                   String.valueOf( zoom ),
+                                   String.valueOf( tile.getZ() ),
                                    String.valueOf( tile.getX() ),
                                    String.valueOf( tile.getY() ) ) + ".png";
 
@@ -202,7 +203,7 @@ public enum TileCache
             tile.setPending( true );
             Path path = getPath( tile );
 
-            URL url = new URL( server.getTileUrl( zoom, tile.getX(), tile.getY() ) );
+            URL url = new URL( server.getTileUrl( tile.getZ(), tile.getX(), tile.getY() ) );
             LOG.log( Level.INFO, () -> "Retrieving " + url );
 
             URLConnection con = url.openConnection();

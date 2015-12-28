@@ -15,12 +15,26 @@
  */
 package onl.area51.gfs.mapviewer;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
+import onl.area51.gfs.grib2.Grib2File;
+import onl.area51.gfs.mapviewer.cache.TileCache;
+
 /**
  *
  * @author peter
  */
 public class Main
 {
+
+    private static MapViewer frame;
+    private static final Executor executor = Executors.newSingleThreadExecutor();
+    private static Grib2File gribFile;
 
     public static void main( String args[] )
     {
@@ -44,7 +58,54 @@ public class Main
             java.util.logging.Logger.getLogger( MapViewer.class.getName() ).log( java.util.logging.Level.SEVERE, null, ex );
         }
 
+        // Some defaults
+        TileCache.INSTANCE.setServer( MapTileServer.OPEN_STREET_MAP );
+        TileCache.INSTANCE.setZoom( 0 );
+
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater( () -> new MapViewer().setVisible( true ) );
+        java.awt.EventQueue.invokeLater( () -> {
+            frame = new MapViewer();
+            frame.setVisible( true );
+        } );
+    }
+
+    public static MapViewer getFrame()
+    {
+        return frame;
+    }
+
+    public static Grib2File getGribFile()
+    {
+        return gribFile;
+    }
+
+    public static void setGribFile( Grib2File gribFile )
+    {
+        Main.gribFile = gribFile;
+    }
+
+    public static void execute( Runnable command )
+    {
+        executor.execute( command );
+    }
+
+    public static void executeTask( Task c )
+    {
+        executor.execute( () -> {
+            try {
+                c.run();
+            }
+            catch( Exception e ) {
+                ErrorDialog.show( e );
+            }
+        } );
+    }
+
+    @FunctionalInterface
+    public static interface Task
+    {
+
+        void run()
+                throws Exception;
     }
 }

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import onl.area51.gfs.grib2.io.GribFileInputStream;
 import onl.area51.gfs.grib2.io.GribInputStream;
 import onl.area51.gfs.grib2.section.DataSet;
@@ -43,8 +44,7 @@ public class Grib2File
     {
         this.file = file;
         gis = new GribFileInputStream( file );
-        System.out.println( "File length " + gis.length() );
-
+        
         while( gis.position() < gis.length() ) {
             DataSet dataSet = new DataSet( gis );
             entries.add( dataSet );
@@ -70,6 +70,11 @@ public class Grib2File
     public Map<Integer, DataSet> getIndex()
     {
         return index;
+    }
+
+    public void forEach( Consumer<DataSet> action )
+    {
+        entries.forEach( action );
     }
 
 }

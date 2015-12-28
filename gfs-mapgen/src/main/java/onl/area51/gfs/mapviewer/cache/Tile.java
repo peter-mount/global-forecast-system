@@ -24,15 +24,21 @@ import java.awt.Image;
 public class Tile
 {
 
-    private final int x, y;
+    private final int z, x, y;
     private Image image;
     private boolean error;
     private boolean pending;
 
-    public Tile( int x, int y )
+    public Tile( int z, int x, int y )
     {
+        this.z = z;
         this.x = x;
         this.y = y;
+    }
+
+    public int getZ()
+    {
+        return z;
     }
 
     public int getX()
