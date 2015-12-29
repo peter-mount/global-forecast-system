@@ -54,6 +54,8 @@ public class MapViewer
         mapScrollPane.setViewportView( mapPanel );
         invalidate();
 
+        mapPanel.setMapNotifier( Main::setStatus );
+
         baseLayerModel = new LayerListModel( new BaseLayers( s -> new TileRenderer( s, e -> repaint() ) ) );
         baseLayers.setModel( baseLayerModel );
         mapPanel.setRenderer( baseLayerModel );
