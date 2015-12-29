@@ -15,14 +15,12 @@
  */
 package onl.area51.gfs.mapviewer;
 
-import onl.area51.mapgen.tilecache.MapTileServer;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import onl.area51.gfs.grib2.Grib2File;
 import onl.area51.mapgen.swing.SwingUtils;
-import onl.area51.mapgen.tilecache.TileCache;
 
 /**
  *
@@ -56,19 +54,10 @@ public class Main
             java.util.logging.Logger.getLogger( MapViewer.class.getName() ).log( java.util.logging.Level.SEVERE, null, ex );
         }
 
-        // Some defaults
-        TileCache.INSTANCE.setServer( MapTileServer.OPEN_STREET_MAP );
-        TileCache.INSTANCE.setZoom( 0 );
-
         /* Create and display the form */
         SwingUtilities.invokeLater( () -> {
             frame = new MapViewer();
             frame.setVisible( true );
-
-            // This shows the open dialog when we open
-//            SwingUtilities.invokeLater( () -> {
-//                OpenGribAction.getInstance().actionPerformed( null );
-//            } );
         } );
     }
 

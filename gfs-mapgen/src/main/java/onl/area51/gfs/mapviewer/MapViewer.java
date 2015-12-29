@@ -27,8 +27,10 @@ import onl.area51.gfs.grib2.section.product.ProductDefinition;
 import onl.area51.gfs.mapviewer.action.ImportGribAction;
 import onl.area51.gfs.mapviewer.action.OpenGribAction;
 import onl.area51.gfs.mapviewer.action.QuitAction;
+import onl.area51.mapgen.renderers.TileRenderer;
+import onl.area51.mapgen.swing.LayerListModel;
 import onl.area51.mapgen.swing.SwingUtils;
-import onl.area51.mapgen.tilecache.TileCache;
+import onl.area51.mapgen.tilecache.BaseLayers;
 
 /**
  *
@@ -38,6 +40,7 @@ public class MapViewer
         extends javax.swing.JFrame
 {
 
+    private final LayerListModel baseLayerModel;
     private final TilePanel mapPanel;
 
     /**
@@ -51,11 +54,25 @@ public class MapViewer
         mapScrollPane.setViewportView( mapPanel );
         invalidate();
 
+        baseLayerModel = new LayerListModel( new BaseLayers( s -> new TileRenderer( s, e -> repaint() ) ) );
+        baseLayers.setModel( baseLayerModel );
+        mapPanel.setRenderer( baseLayerModel );
+
+        baseLayers.addListSelectionListener( e -> {
+            if( !e.getValueIsAdjusting() ) {
+                int sel = baseLayers.getSelectedIndex();
+                baseLayerModel.forEach( l -> l.setEnabled( false ) );
+                baseLayerModel.get( sel ).setEnabled( true );
+                mapPanel.repaintMap();
+            }
+        } );
+
         SwingUtils.invokeLater( () -> {
-            ddMapLayer.setSelectedItem( MapTileServer.OPEN_STREET_MAP );
+            baseLayers.setSelectedIndex( 0 );
+            //  ddMapLayer.setSelectedItem( MapTileServer.OPEN_STREET_MAP );
             SwingUtils.invokeLater( () -> {
                 MapPresets preset = MapPresets.WEST_EUROPE_ATLANTIC;
-                TileCache.INSTANCE.setZoom( preset.getZoom() );
+                mapPanel.setZoom( preset.getZoom() );
                 sliderZoom.setValue( preset.getZoom() );
                 mapPanel.setPreset( preset );
                 SwingUtils.invokeLater( this::invalidate );
@@ -74,11 +91,17 @@ public class MapViewer
     private void initComponents()
     {
 
+        jPanel2 = new javax.swing.JPanel();
+        jPanel3 = new javax.swing.JPanel();
         ddMapLayer = new javax.swing.JComboBox();
         labZoom = new javax.swing.JLabel();
         sliderZoom = new javax.swing.JSlider();
         jSplitPane1 = new javax.swing.JSplitPane();
-        jPanel3 = new javax.swing.JPanel();
+        jTabbedPane1 = new javax.swing.JTabbedPane();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        baseLayers = new javax.swing.JList();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        dataSets = new javax.swing.JList();
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -90,9 +113,6 @@ public class MapViewer
         labTypeOfData = new javax.swing.JLabel();
         labDataType = new javax.swing.JLabel();
         labNoPoints = new javax.swing.JLabel();
-        jPanel2 = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        dataSets = new javax.swing.JList();
         mapScrollPane = new javax.swing.JScrollPane();
         status = new javax.swing.JLabel();
         jComboBox1 = new javax.swing.JComboBox();
@@ -104,6 +124,30 @@ public class MapViewer
         exitItem = new javax.swing.JMenuItem();
         jMenu4 = new javax.swing.JMenu();
         jCheckBoxMenuItem1 = new javax.swing.JCheckBoxMenuItem();
+
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Available DataSets"));
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 289, Short.MAX_VALUE)
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 392, Short.MAX_VALUE)
+        );
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 299, Short.MAX_VALUE)
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 674, Short.MAX_VALUE)
+        );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Simple Grib2 Viewer");
@@ -146,7 +190,29 @@ public class MapViewer
 
         jSplitPane1.setDividerLocation(300);
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("DataSet Details"));
+        baseLayers.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        baseLayers.setCellRenderer(new BaseLayerCellRenderer());
+        baseLayers.setSelectedIndex(0);
+        jScrollPane2.setViewportView(baseLayers);
+
+        jTabbedPane1.addTab("Base Layers", jScrollPane2);
+
+        dataSets.setModel(new javax.swing.AbstractListModel()
+        {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        dataSets.addListSelectionListener(new javax.swing.event.ListSelectionListener()
+        {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt)
+            {
+                dataSetsValueChanged(evt);
+            }
+        });
+        jScrollPane1.setViewportView(dataSets);
+
+        jTabbedPane1.addTab("GRIB Layers", jScrollPane1);
 
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         jLabel1.setText("DataSet ID");
@@ -183,7 +249,7 @@ public class MapViewer
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(labDataId, javax.swing.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE))
+                        .addComponent(labDataId, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel5)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -228,61 +294,12 @@ public class MapViewer
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
                     .addComponent(labNoPoints))
-                .addContainerGap(126, Short.MAX_VALUE))
+                .addContainerGap(536, Short.MAX_VALUE))
         );
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Available DataSets"));
+        jTabbedPane1.addTab("Details", jPanel1);
 
-        dataSets.setModel(new javax.swing.AbstractListModel()
-        {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
-        dataSets.addListSelectionListener(new javax.swing.event.ListSelectionListener()
-        {
-            public void valueChanged(javax.swing.event.ListSelectionEvent evt)
-            {
-                dataSetsValueChanged(evt);
-            }
-        });
-        jScrollPane1.setViewportView(dataSets);
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE)
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE)
-        );
-
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 299, Short.MAX_VALUE)
-            .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 674, Short.MAX_VALUE)
-            .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                    .addGap(0, 415, Short.MAX_VALUE)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-            .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(jPanel3Layout.createSequentialGroup()
-                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(0, 260, Short.MAX_VALUE)))
-        );
-
-        jSplitPane1.setLeftComponent(jPanel3);
+        jSplitPane1.setLeftComponent(jTabbedPane1);
         jSplitPane1.setRightComponent(mapScrollPane);
 
         status.setText(" ");
@@ -370,16 +387,16 @@ public class MapViewer
     private void sliderZoomStateChanged(javax.swing.event.ChangeEvent evt)//GEN-FIRST:event_sliderZoomStateChanged
     {//GEN-HEADEREND:event_sliderZoomStateChanged
         int zoom = sliderZoom.getValue();
-        if( zoom != TileCache.INSTANCE.getZoom() ) {
-            TileCache.INSTANCE.setZoom( zoom );
+        if( zoom != mapPanel.getZoom() ) {
+            mapPanel.setZoom( zoom );
             labZoom.setText( String.valueOf( zoom ) );
         }
     }//GEN-LAST:event_sliderZoomStateChanged
 
     private void formWindowOpened(java.awt.event.WindowEvent evt)//GEN-FIRST:event_formWindowOpened
     {//GEN-HEADEREND:event_formWindowOpened
-        ddMapLayer.setSelectedItem( TileCache.INSTANCE.getServer() );
-        sliderZoom.setValue( TileCache.INSTANCE.getZoom() );
+        //ddMapLayer.setSelectedItem( TileCache.INSTANCE.getServer() );
+        sliderZoom.setValue( mapPanel.getZoom() );
         mapPanel.repaintMap();
     }//GEN-LAST:event_formWindowOpened
 
@@ -387,7 +404,7 @@ public class MapViewer
     {//GEN-HEADEREND:event_jComboBox1ActionPerformed
         MapPresets preset = (MapPresets) jComboBox1.getSelectedItem();
         if( preset != null && preset != MapPresets.UNSET ) {
-            TileCache.INSTANCE.setZoom( preset.getZoom() );
+            mapPanel.setZoom( preset.getZoom() );
             sliderZoom.setValue( preset.getZoom() );
             mapPanel.setPreset( preset );
         }
@@ -402,11 +419,11 @@ public class MapViewer
     {//GEN-HEADEREND:event_ddMapLayerActionPerformed
         MapTileServer server = (MapTileServer) ddMapLayer.getSelectedItem();
         if( server != null ) {
-            TileCache.INSTANCE.setServer( server );
+            //TileCache.INSTANCE.setServer( server );
             int zoom = sliderZoom.getValue();
             int newZoom = Math.min( Math.max( zoom, server.getMinZoom() ), server.getMaxZoom() );
             if( zoom != newZoom ) {
-                TileCache.INSTANCE.setZoom( zoom );
+                mapPanel.setZoom( zoom );
                 sliderZoom.setValue( zoom );
             }
             mapPanel.repaintMap();
@@ -448,42 +465,6 @@ public class MapViewer
 
     }//GEN-LAST:event_jCheckBoxMenuItem1ActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main( String args[] )
-    {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for( javax.swing.UIManager.LookAndFeelInfo info: javax.swing.UIManager.getInstalledLookAndFeels() ) {
-                if( "Nimbus".equals( info.getName() ) ) {
-                    javax.swing.UIManager.setLookAndFeel( info.getClassName() );
-                    break;
-                }
-            }
-        }
-        catch( ClassNotFoundException ex ) {
-            java.util.logging.Logger.getLogger( MapViewer.class.getName() ).log( java.util.logging.Level.SEVERE, null, ex );
-        }
-        catch( InstantiationException ex ) {
-            java.util.logging.Logger.getLogger( MapViewer.class.getName() ).log( java.util.logging.Level.SEVERE, null, ex );
-        }
-        catch( IllegalAccessException ex ) {
-            java.util.logging.Logger.getLogger( MapViewer.class.getName() ).log( java.util.logging.Level.SEVERE, null, ex );
-        }
-        catch( javax.swing.UnsupportedLookAndFeelException ex ) {
-            java.util.logging.Logger.getLogger( MapViewer.class.getName() ).log( java.util.logging.Level.SEVERE, null, ex );
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater( () -> new MapViewer().setVisible( true ) );
-    }
-
     public JList getDataSets()
     {
         return dataSets;
@@ -495,6 +476,7 @@ public class MapViewer
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JList baseLayers;
     private javax.swing.JList dataSets;
     private javax.swing.JComboBox ddMapLayer;
     private javax.swing.JMenuItem exitItem;
@@ -514,8 +496,10 @@ public class MapViewer
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JLabel labDataId;
     private javax.swing.JLabel labDataType;
     private javax.swing.JLabel labNoPoints;
