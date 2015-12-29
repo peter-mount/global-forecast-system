@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.Map;
 import onl.area51.gfs.grib2.io.GribInputStream;
 import onl.area51.gfs.grib2.section.product.AbstractForecastProduct;
-import onl.area51.gfs.grib2.section.product.Product;
 import onl.area51.gfs.grib2.section.product.ProductDefinition;
 
 /**

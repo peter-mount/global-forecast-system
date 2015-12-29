@@ -15,14 +15,14 @@
  */
 package onl.area51.gfs.mapviewer;
 
+import onl.area51.mapgen.tilecache.MapTileServer;
 import java.io.IOException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import onl.area51.gfs.grib2.Grib2File;
-import onl.area51.gfs.mapviewer.cache.TileCache;
+import onl.area51.mapgen.swing.SwingUtils;
+import onl.area51.mapgen.tilecache.TileCache;
 
 /**
  *
@@ -32,7 +32,6 @@ public class Main
 {
 
     private static MapViewer frame;
-    private static final Executor executor = Executors.newCachedThreadPool();
     private static Grib2File gribFile;
 
     public static void main( String args[] )
@@ -75,7 +74,7 @@ public class Main
 
     public static MapViewer getFrame()
     {
-        return frame;
+        return (MapViewer)SwingUtils.getFrame();
     }
 
     public static Grib2File getGribFile()
@@ -106,44 +105,4 @@ public class Main
         setStatus( String.format( s, args ) );
     }
 
-    public static void execute( Runnable command )
-    {
-        executor.execute( command );
-    }
-
-    public static void executeTask( Task c )
-    {
-        if( c != null ) {
-            executor.execute( () -> {
-                try {
-                    c.run();
-                }
-                catch( Exception e ) {
-                    ErrorDialog.show( e );
-                }
-            } );
-        }
-    }
-
-    /**
-     * Delegates to {@link SwingUtilities#invokeLater(java.lang.Runnable) } after an enforced 50ms delay. This is to allow for other tasks
-     * to be executed first - for example moving the view port to a preset map
-     * <p>
-     * @param r
-     */
-    public static void invokeLater( Runnable r )
-    {
-        executeTask( () -> {
-            Thread.sleep( 50 );
-            SwingUtilities.invokeLater( r );
-        } );
-    }
-
-    @FunctionalInterface
-    public static interface Task
-    {
-
-        void run()
-                throws Exception;
-    }
 }

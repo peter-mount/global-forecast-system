@@ -28,6 +28,7 @@ import onl.area51.gfs.grib2.section.SectionType;
 import onl.area51.gfs.grib2.section.product.AbstractForecastProduct;
 import onl.area51.gfs.mapviewer.Main;
 import onl.area51.gfs.mapviewer.MapViewer;
+import onl.area51.mapgen.swing.SwingUtils;
 
 /**
  *
@@ -67,7 +68,7 @@ public class OpenGribAction
         SwingUtilities.invokeLater( () -> {
             if( fileChooser.showOpenDialog( Main.getFrame() ) == JFileChooser.APPROVE_OPTION ) {
                 File file = fileChooser.getSelectedFile();
-                Main.executeTask( () -> open( file ) );
+                SwingUtils.executeTask( () -> open( file ) );
             }
             else if( e == null ) {
                 // No Action then from Main so close

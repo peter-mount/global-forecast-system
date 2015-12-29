@@ -17,12 +17,14 @@ package onl.area51.gfs.mapviewer;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import onl.area51.mapgen.tilecache.MapPreset;
 
 /**
  *
  * @author peter
  */
-public enum MapPreset
+public enum MapPresets
+        implements MapPreset
 {
 
     UNSET( "Select preset", -1, -1, -1 ),
@@ -33,7 +35,7 @@ public enum MapPreset
     UK6_NORTH( "United Kingdom Zoom 6 - North", 6, 7583, 4653 ),
     ENGLAND_SOUTH( "England South", 7, 15762, 10535 );
 
-    public static ComboBoxModel<MapPreset> getComboBoxModel()
+    public static ComboBoxModel<MapPresets> getComboBoxModel()
     {
         return new DefaultComboBoxModel<>( values() );
     }
@@ -42,7 +44,7 @@ public enum MapPreset
     private final int zoom;
     private final int x, y;
 
-    private MapPreset( String label, int zoom, int x, int y )
+    private MapPresets( String label, int zoom, int x, int y )
     {
         this.label = label;
         this.zoom = zoom;
@@ -50,16 +52,19 @@ public enum MapPreset
         this.y = y;
     }
 
+    @Override
     public String getLabel()
     {
         return label;
     }
 
+    @Override
     public int getX()
     {
         return x;
     }
 
+    @Override
     public int getY()
     {
         return y;

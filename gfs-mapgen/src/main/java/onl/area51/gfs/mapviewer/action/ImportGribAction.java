@@ -18,9 +18,6 @@ package onl.area51.gfs.mapviewer.action;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.stream.Collectors;
 import javax.swing.AbstractAction;
@@ -31,7 +28,8 @@ import javax.swing.SwingUtilities;
 import onl.area51.gfs.grib2.io.Grib2FileFilter;
 import onl.area51.gfs.mapviewer.Main;
 import onl.area51.gfs.mapviewer.SelectFTPFile;
-import onl.area51.gfs.mapviewer.io.ProgressDialog;
+import onl.area51.mapgen.swing.SwingUtils;
+import onl.area51.mapgen.swing.io.ProgressDialog;
 import org.apache.commons.net.ftp.FTPFile;
 import uk.trainwatch.io.ftp.FTPClient;
 import uk.trainwatch.io.ftp.FTPClientBuilder;
@@ -76,7 +74,7 @@ public class ImportGribAction
     {
         SwingUtilities.invokeLater( () -> {
             if( JOptionPane.showConfirmDialog( Main.getFrame(), "Retrieve latest GRIB file from NOAA?", "Import GRIB File", JOptionPane.YES_NO_OPTION ) == JOptionPane.YES_OPTION ) {
-                Main.executeTask( this::locateGribFile );
+                SwingUtils.executeTask( this::locateGribFile );
             }
         } );
     }
@@ -155,19 +153,19 @@ public class ImportGribAction
                                      () -> client.retrieveFileStream( remoteFile.getName() ),
                                      () -> {
                                          Main.setStatus( "Disconnecting, transfer complete." );
-                                         Main.executeTask( client::close );
+                                         SwingUtils.executeTask( client::close );
                                          OpenGribAction.getInstance().open( localFile );
                                      },
                                      () -> {
                                          Main.setStatus( "Disconnecting, transfer failed" );
-                                         Main.executeTask( client::close );
+                                         SwingUtils.executeTask( client::close );
                                      },
                                      localFile.toPath(),
                                      StandardCopyOption.REPLACE_EXISTING );
             }
             else {
                 Main.setStatus( "Disconnecting, no transfer performed." );
-                Main.executeTask( client::close );
+                SwingUtils.executeTask( client::close );
             }
 
         }

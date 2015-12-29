@@ -15,12 +15,20 @@
  */
 package onl.area51.gfs.mapviewer;
 
+import onl.area51.mapgen.swing.TilePanel;
+import onl.area51.mapgen.tilecache.MapTileServer;
 import javax.swing.JList;
 import javax.swing.SwingUtilities;
+import onl.area51.gfs.grib2.section.DataSet;
+import onl.area51.gfs.grib2.section.Identification;
+import onl.area51.gfs.grib2.section.SectionType;
+import onl.area51.gfs.grib2.section.product.AbstractForecastProduct;
+import onl.area51.gfs.grib2.section.product.ProductDefinition;
 import onl.area51.gfs.mapviewer.action.ImportGribAction;
 import onl.area51.gfs.mapviewer.action.OpenGribAction;
 import onl.area51.gfs.mapviewer.action.QuitAction;
-import onl.area51.gfs.mapviewer.cache.TileCache;
+import onl.area51.mapgen.swing.SwingUtils;
+import onl.area51.mapgen.tilecache.TileCache;
 
 /**
  *
@@ -43,14 +51,14 @@ public class MapViewer
         mapScrollPane.setViewportView( mapPanel );
         invalidate();
 
-        Main.invokeLater( () -> {
+        SwingUtils.invokeLater( () -> {
             ddMapLayer.setSelectedItem( MapTileServer.OPEN_STREET_MAP );
-            Main.invokeLater( () -> {
-                MapPreset preset = MapPreset.WEST_EUROPE_ATLANTIC;
+            SwingUtils.invokeLater( () -> {
+                MapPresets preset = MapPresets.WEST_EUROPE_ATLANTIC;
                 TileCache.INSTANCE.setZoom( preset.getZoom() );
                 sliderZoom.setValue( preset.getZoom() );
                 mapPanel.setPreset( preset );
-                Main.invokeLater( this::invalidate );
+                SwingUtils.invokeLater( this::invalidate );
             } );
         } );
     }
@@ -95,6 +103,7 @@ public class MapViewer
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         exitItem = new javax.swing.JMenuItem();
         jMenu4 = new javax.swing.JMenu();
+        jCheckBoxMenuItem1 = new javax.swing.JCheckBoxMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Simple Grib2 Viewer");
@@ -230,6 +239,13 @@ public class MapViewer
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
         });
+        dataSets.addListSelectionListener(new javax.swing.event.ListSelectionListener()
+        {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt)
+            {
+                dataSetsValueChanged(evt);
+            }
+        });
         jScrollPane1.setViewportView(dataSets);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
@@ -272,7 +288,7 @@ public class MapViewer
         status.setText(" ");
         status.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        jComboBox1.setModel(onl.area51.gfs.mapviewer.MapPreset.getComboBoxModel());
+        jComboBox1.setModel(onl.area51.gfs.mapviewer.MapPresets.getComboBoxModel());
         jComboBox1.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
@@ -296,7 +312,18 @@ public class MapViewer
 
         jMenuBar2.add(jMenu3);
 
-        jMenu4.setText("Edit");
+        jMenu4.setText("View");
+
+        jCheckBoxMenuItem1.setText("Show Tile Grid");
+        jCheckBoxMenuItem1.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                jCheckBoxMenuItem1ActionPerformed(evt);
+            }
+        });
+        jMenu4.add(jCheckBoxMenuItem1);
+
         jMenuBar2.add(jMenu4);
 
         setJMenuBar(jMenuBar2);
@@ -358,8 +385,8 @@ public class MapViewer
 
     private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jComboBox1ActionPerformed
     {//GEN-HEADEREND:event_jComboBox1ActionPerformed
-        MapPreset preset = (MapPreset) jComboBox1.getSelectedItem();
-        if( preset != null && preset != MapPreset.UNSET ) {
+        MapPresets preset = (MapPresets) jComboBox1.getSelectedItem();
+        if( preset != null && preset != MapPresets.UNSET ) {
             TileCache.INSTANCE.setZoom( preset.getZoom() );
             sliderZoom.setValue( preset.getZoom() );
             mapPanel.setPreset( preset );
@@ -385,6 +412,41 @@ public class MapViewer
             mapPanel.repaintMap();
         }
     }//GEN-LAST:event_ddMapLayerActionPerformed
+
+    private void dataSetsValueChanged(javax.swing.event.ListSelectionEvent evt)//GEN-FIRST:event_dataSetsValueChanged
+    {//GEN-HEADEREND:event_dataSetsValueChanged
+        DataSet set = (DataSet) dataSets.getSelectedValue();
+        if( set != null ) {
+            SwingUtilities.invokeLater( () -> {
+                Identification id = set.get( SectionType.IDENTIFICATION );
+                labDataId.setText( String.valueOf( id.getId() ) );
+                labTimestamp.setText( id.getDateTime().toString() );
+
+                ProductDefinition prodDef = set.get( SectionType.PRODUCT_DEFINITION );
+                labTypeOfData.setText( prodDef.getTemplate().name() );
+
+                if( prodDef instanceof AbstractForecastProduct ) {
+                    AbstractForecastProduct p = (AbstractForecastProduct) prodDef;
+                    labNoPoints.setText( String.valueOf( p.getNoCoordAfterTemplate() ) );
+                }
+                else {
+                    labNoPoints.setText( "??" );
+                }
+            } );
+        }
+    }//GEN-LAST:event_dataSetsValueChanged
+
+    private void jCheckBoxMenuItem1ActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jCheckBoxMenuItem1ActionPerformed
+    {//GEN-HEADEREND:event_jCheckBoxMenuItem1ActionPerformed
+        boolean selected = jCheckBoxMenuItem1.isSelected();
+        if( selected != mapPanel.isShowGrid() ) {
+            SwingUtilities.invokeLater( () -> {
+                mapPanel.setShowGrid( selected );
+                mapPanel.repaint();
+            } );
+        }
+
+    }//GEN-LAST:event_jCheckBoxMenuItem1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -438,6 +500,7 @@ public class MapViewer
     private javax.swing.JMenuItem exitItem;
     private javax.swing.JMenuItem gribAction;
     private javax.swing.JMenuItem importAction;
+    private javax.swing.JCheckBoxMenuItem jCheckBoxMenuItem1;
     private javax.swing.JComboBox jComboBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

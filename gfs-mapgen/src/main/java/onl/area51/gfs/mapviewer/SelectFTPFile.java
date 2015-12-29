@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.function.Predicate;
 import javax.swing.SwingUtilities;
 import onl.area51.gfs.mapviewer.action.DataSetModel;
+import onl.area51.mapgen.swing.SwingUtils;
 import org.apache.commons.net.ftp.FTPFile;
 import uk.trainwatch.io.ftp.FTPClient;
 
@@ -160,7 +161,7 @@ public class SelectFTPFile
             FTPFile file = (FTPFile) jList1.getSelectedValue();
             if( file != null ) {
                 setVisible( false );
-                Main.executeTask( () -> task.select( client, file ) );
+                SwingUtils.executeTask( () -> task.select( client, file ) );
             }
         } );
     }//GEN-LAST:event_selectButtonActionPerformed
@@ -168,7 +169,7 @@ public class SelectFTPFile
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_cancelButtonActionPerformed
     {//GEN-HEADEREND:event_cancelButtonActionPerformed
         SwingUtilities.invokeLater( () -> {
-            Main.executeTask( () -> client.close() );
+            SwingUtils.executeTask( () -> client.close() );
             setVisible( false );
             Main.setStatus( "Aborted. Closing FTP Connection" );
         } );
